@@ -1,7 +1,7 @@
 # Unique Thread
 
-Allows multiple processes to coordinate to make sure only one of them (and only
-one of them) is running a block of code at all times.
+Allows multiple processes to coordinate to make sure one of them (and only one
+of them) is running a block of code at all times.
 
 ```ruby
 UniqueThread.new('my_lock').run do

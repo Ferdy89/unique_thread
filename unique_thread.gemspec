@@ -9,5 +9,5 @@ Gem::Specification.new do |s|
 
   s.files = Dir['lib/**/*.rb']
 
-  s.add_dependency 'redis'
+  s.add_dependency 'redis', '>= 3', '< 5'
 end
