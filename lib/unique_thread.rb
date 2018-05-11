@@ -2,8 +2,8 @@
 
 require 'logger'
 require 'redis'
-require_relative 'stopwatch'
-require_relative 'locksmith'
+require_relative 'unique_thread/stopwatch'
+require_relative 'unique_thread/locksmith'
 
 class UniqueThread
   attr_reader :logger, :stopwatch, :locksmith
