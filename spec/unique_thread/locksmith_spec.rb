@@ -77,7 +77,7 @@ RSpec.describe UniqueThread::Locksmith do
     describe '#while_held' do
       it 'yields the block' do
         allow(stopwatch).to receive(:sleep_until_renewal_attempt) do
-          Thread.pass # Hint the thread scheduler to run the block
+          sleep(0.1) # Allow the thread scheduler to run the block
 
           # "Steal" the lock to exit
           allow(stopwatch).to receive(:now).and_return(120.0)
@@ -99,7 +99,7 @@ RSpec.describe UniqueThread::Locksmith do
 
       it 'kills the block when the lock is stolen' do
         allow(stopwatch).to receive(:sleep_until_renewal_attempt) do
-          Thread.pass # Hint the thread scheduler to run the block
+          sleep(0.1) # Allow the thread scheduler to run the block
 
           # "Steal" the lock to exit
           allow(stopwatch).to receive(:now).and_return(120.0)
