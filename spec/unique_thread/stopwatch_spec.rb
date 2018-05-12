@@ -7,13 +7,13 @@ RSpec.describe UniqueThread::Stopwatch do
 
   describe '#now' do
     it 'gives the current time in epoch with decimals' do
-      expect(subject.now).to eql(1_526_063_411.05)
+      expect(subject.now).to eql(current_time.to_f)
     end
   end
 
   describe '#next_renewal' do
     it 'points to two thirds of the allowed downtime from now' do
-      expect(subject.next_renewal).to eql(1_526_063_451.05)
+      expect(subject.next_renewal).to eql(current_time.to_f + 40)
     end
   end
 
