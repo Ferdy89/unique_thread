@@ -52,6 +52,7 @@ Unique Thread.
 ```ruby
 UniqueThread.logger = Logger.new($stdout)
 UniqueThread.redis = Redis.new
+UniqueThread.error_handlers << ->(error) { Raven.capture_exception(error) }
 UniqueThread.new('name', downtime: 30)
 ```
 
@@ -74,6 +75,18 @@ default but you can use your own logger like:
 
 ```ruby
 UniqueThread.logger = Logger.new($stdout)
+```
+
+### Error handlers
+
+Unique Thread allows you to configure as many error handlers as you need. These
+are a collection of blocks that will be called and passed any exceptions that
+might happen on your thread. You might want to use this to ensure you have
+visibility on any error reporting services you use. For example:
+
+```ruby
+# Any errors will be uploaded to Sentry
+UniqueThread.error_handlers << ->(error) { Raven.capture_exception(error) }
 ```
 
 ### Downtime

@@ -70,7 +70,7 @@ class UniqueThread
     end
 
     def while_held
-      worker = Thread.new do
+      worker = UniqueThread.safe_thread do
         yield
         UniqueThread.logger.error('The blocked passed is not an infinite loop.')
       end

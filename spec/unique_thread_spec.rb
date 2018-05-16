@@ -3,7 +3,6 @@ RSpec.describe UniqueThread do
     let(:mock_logger) { instance_double(Logger, info: nil) }
 
     before { described_class.logger = nil }
-    after  { described_class.logger = Logger.new('/dev/null') }
 
     it 'defaults to the standard output' do
       expect { described_class.logger.info('Hello!') }.to output(/Hello!/).to_stdout
@@ -49,6 +48,39 @@ RSpec.describe UniqueThread do
       described_class.redis = Redis.new(host: 'localhost')
 
       expect(described_class.redis.connection[:host]).to eql('localhost')
+    end
+  end
+
+  describe '.safe_thread' do
+    it 'yields a block in a thread' do
+      run = false
+
+      described_class.safe_thread { run = true }
+      sleep(0.1) # Give time for thread to run
+
+      expect(run).to be(true)
+    end
+
+    it 'logs errors happening in the block' do
+      mock_logger = instance_double(Logger, error: nil)
+      described_class.logger = mock_logger
+
+      described_class.safe_thread { raise 'Uh, oh! This is bad!' }
+      sleep(0.1) # Give time for thread to run
+
+      expect(mock_logger).to have_received(:error).with(/Uh, oh! This is bad!/)
+    end
+
+    it 'passes errors happening in the block to any error handlers' do
+      reported_errors = []
+      described_class.error_handlers << ->(error) { reported_errors << error }
+
+      described_class.safe_thread { raise 'Uh, oh! This is bad!' }
+      sleep(0.1) # Give time for thread to run
+
+      expect(reported_errors).to contain_exactly(an_object_having_attributes(message: 'Uh, oh! This is bad!'))
+
+      described_class.error_handlers = []
     end
   end
 

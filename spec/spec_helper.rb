@@ -1,7 +1,5 @@
 require 'unique_thread'
 
-UniqueThread.logger = Logger.new('/dev/null')
-
 # http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
@@ -61,4 +59,6 @@ RSpec.configure do |config|
   # test failures related to randomization by passing the same `--seed` value
   # as the one that triggered the failure.
   Kernel.srand config.seed
+
+  config.before { UniqueThread.logger = Logger.new('/dev/null') }
 end

@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name    = 'unique_thread'
-  s.version = '0.3.0'
+  s.version = '0.4.0'
   s.summary = 'Allows a block of code to be run once across many processes'
   s.license = 'MIT'
 

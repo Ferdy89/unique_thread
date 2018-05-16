@@ -7,7 +7,7 @@ require_relative 'unique_thread/locksmith'
 
 class UniqueThread
   class << self
-    attr_writer :logger, :redis
+    attr_writer :logger, :redis, :error_handlers
 
     def logger
       @logger ||= default_logger
@@ -15,6 +15,20 @@ class UniqueThread
 
     def redis
       @redis ||= Redis.new
+    end
+
+    def error_handlers
+      @error_handlers ||= []
+    end
+
+    def safe_thread
+      Thread.new do
+        begin
+          yield
+        rescue StandardError => error
+          report_error(error)
+        end
+      end
     end
 
     private
@@ -29,6 +43,11 @@ class UniqueThread
         Logger.new($stdout)
       end
     end
+
+    def report_error(exception)
+      logger.error(exception.inspect)
+      error_handlers.each { |handler| handler.call(exception) }
+    end
   end
 
   attr_reader :stopwatch, :locksmith
@@ -39,28 +58,22 @@ class UniqueThread
   end
 
   def run(&block)
-    safe_infinite_loop do
-      lock = locksmith.new_lock
-
-      if lock.acquired?
-        self.class.logger.info('Lock acquired! Running the unique thread.')
-        lock.while_held(&block)
-      else
-        self.class.logger.debug('Could not acquire the lock. Sleeping until next attempt.')
-        stopwatch.sleep_until_next_attempt(lock.locked_until.to_f)
-      end
+    self.class.safe_thread do
+      loop { try_being_the_unique_thread(&block) }
     end
   end
 
   private
 
-  def safe_infinite_loop
-    Thread.new do
-      begin
-        loop { yield }
-      rescue StandardError => error
-        self.class.logger.error(error)
-      end
+  def try_being_the_unique_thread(&block)
+    lock = locksmith.new_lock
+
+    if lock.acquired?
+      self.class.logger.info('Lock acquired! Running the unique thread.')
+      lock.while_held(&block)
+    else
+      self.class.logger.debug('Could not acquire the lock. Sleeping until next attempt.')
+      stopwatch.sleep_until_next_attempt(lock.locked_until.to_f)
     end
   end
 end
