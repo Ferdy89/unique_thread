@@ -6,12 +6,36 @@ require_relative 'unique_thread/stopwatch'
 require_relative 'unique_thread/locksmith'
 
 class UniqueThread
-  attr_reader :logger, :stopwatch, :locksmith
+  class << self
+    attr_writer :logger, :redis
 
-  def initialize(name, downtime: 30, logger: default_logger, redis: Redis.new)
-    @logger    = logger
+    def logger
+      @logger ||= default_logger
+    end
+
+    def redis
+      @redis ||= Redis.new
+    end
+
+    private
+
+    def default_logger
+      case
+      when defined?(Rails) && defined?(Rails::Console)
+        Logger.new('/dev/null')
+      when defined?(Rails)
+        Rails.logger
+      else
+        Logger.new($stdout)
+      end
+    end
+  end
+
+  attr_reader :stopwatch, :locksmith
+
+  def initialize(name, downtime: 30)
     @stopwatch = Stopwatch.new(downtime: downtime)
-    @locksmith = Locksmith.new(name: name, stopwatch: stopwatch, redis: redis, logger: logger)
+    @locksmith = Locksmith.new(name: name, stopwatch: stopwatch)
   end
 
   def run(&block)
@@ -19,10 +43,10 @@ class UniqueThread
       lock = locksmith.new_lock
 
       if lock.acquired?
-        logger.info('Lock acquired! Running the unique thread.')
+        self.class.logger.info('Lock acquired! Running the unique thread.')
         lock.while_held(&block)
       else
-        logger.debug('Could not acquire the lock. Sleeping until next attempt.')
+        self.class.logger.debug('Could not acquire the lock. Sleeping until next attempt.')
         stopwatch.sleep_until_next_attempt(lock.locked_until.to_f)
       end
     end
@@ -30,23 +54,12 @@ class UniqueThread
 
   private
 
-  def self.default_logger
-    case
-    when defined?(Rails) && defined?(Rails::Console)
-      Logger.new('/dev/null')
-    when defined?(Rails)
-      Rails.logger
-    else
-      Logger.new(STDOUT)
-    end
-  end
-
   def safe_infinite_loop
     Thread.new do
       begin
         loop { yield }
       rescue StandardError => error
-        logger.error(error)
+        self.class.logger.error(error)
       end
     end
   end

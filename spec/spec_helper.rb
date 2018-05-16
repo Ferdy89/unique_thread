@@ -1,5 +1,7 @@
 require 'unique_thread'
 
+UniqueThread.logger = Logger.new('/dev/null')
+
 # http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|

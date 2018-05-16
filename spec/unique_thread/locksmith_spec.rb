@@ -1,12 +1,11 @@
 RSpec.describe UniqueThread::Locksmith do
-  subject { described_class.new(name: name, stopwatch: stopwatch, redis: redis, logger: Logger.new('/dev/null')) }
+  subject { described_class.new(name: name, stopwatch: stopwatch) }
 
   let(:name)      { 'the_lock' }
   let(:stopwatch) { instance_double(UniqueThread::Stopwatch) }
-  let(:redis)     { Redis.new }
 
   before do
-    redis.del(name)
+    Redis.new.del(name)
     allow(stopwatch).to receive(:now).and_return(100.0)
     allow(stopwatch).to receive(:next_renewal).and_return(110.0)
   end

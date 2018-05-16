@@ -45,24 +45,36 @@ frequency you need.
 
 ## Configure your Unique Thread
 
-These are the full options you can pass to your Unique Thread
+Unique Thread can be globally configured in a number of ways. Some
+configuration options are global to the gem and some others are local to each
+Unique Thread.
 
 ```ruby
-UniqueThread.new('name', downtime: 30, logger: Logger.new(STDOUT), redis: Redis.new)
+UniqueThread.logger = Logger.new($stdout)
+UniqueThread.redis = Redis.new
+UniqueThread.new('name', downtime: 30)
 ```
 
 ### Redis
 
 Unique Thread will use the default connection parameters for Redis, which means
 it'll try to connect to `ENV['REDIS_URL']` or to `localhost`. However, you can
-pass your own Redis instance to your Unique Thread if you need finer tuning.
+use your own Redis instance like:
+
+```ruby
+UniqueThread.redis = Redis.new
+```
 
 ### Logger
 
 Unique Thread will try to use the Rails logger when running on a Rails app.
 However, it will disable logging when running a `rails console` to avoid noise
 in the console. When used outside Rails, it'll log to standard output by
-default but you can pass in your own logger to have finer tuning.
+default but you can use your own logger like:
+
+```ruby
+UniqueThread.logger = Logger.new($stdout)
+```
 
 ### Downtime
 
@@ -76,6 +88,13 @@ it to run every minute, so your tolerance for downtime could be anything below
 60 seconds. Keep in mind that a lower downtime means that the processes will
 have to poll Redis more often, which might have performance implications if you
 share your database for other purposes.
+
+You can configure a different downtime for each Unique Thread you define. When
+initializing it, you can pass the downtime in seconds:
+
+```ruby
+UniqueThread.new('name', downtime: 30)
+```
 
 ## Reliability
 

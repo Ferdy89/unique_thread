@@ -2,16 +2,14 @@
 
 class UniqueThread
   class Locksmith
-    attr_reader :name, :stopwatch, :redis, :logger
+    attr_reader :name, :stopwatch
 
-    def initialize(name:, stopwatch:, redis:, logger:)
+    def initialize(name:, stopwatch:)
       @name      = name
       @stopwatch = stopwatch
-      @redis     = redis
-      @logger    = logger
 
       @lua_scripts = Hash[Dir[File.join(__dir__, 'redis_lua', '*.lua')].map do |lua_file|
-        [File.basename(lua_file, '.lua').to_sym, redis.script(:load, File.read(lua_file))]
+        [File.basename(lua_file, '.lua').to_sym, UniqueThread.redis.script(:load, File.read(lua_file))]
       end]
     end
 
@@ -34,7 +32,7 @@ class UniqueThread
     attr_reader :lua_scripts
 
     def lock_from_redis_command(script, *args)
-      redis_result = RedisResult.new(*redis.evalsha(lua_scripts[script], args))
+      redis_result = RedisResult.new(*UniqueThread.redis.evalsha(lua_scripts[script], args))
 
       klass = if redis_result.lock_acquired?
                 HeldLock
@@ -42,20 +40,19 @@ class UniqueThread
                 Lock
               end
 
-      klass.new(redis_result.locked_until, stopwatch, self, logger)
+      klass.new(redis_result.locked_until, stopwatch, self)
     end
   end
 
   private
 
   class Lock
-    attr_reader :locked_until, :stopwatch, :locksmith, :logger
+    attr_reader :locked_until, :stopwatch, :locksmith
 
-    def initialize(locked_until, stopwatch, locksmith, logger)
+    def initialize(locked_until, stopwatch, locksmith)
       @locked_until = locked_until
       @stopwatch    = stopwatch
       @locksmith    = locksmith
-      @logger       = logger
     end
 
     def acquired?
@@ -75,12 +72,12 @@ class UniqueThread
     def while_held
       worker = Thread.new do
         yield
-        logger.error('The blocked passed is not an infinite loop.')
+        UniqueThread.logger.error('The blocked passed is not an infinite loop.')
       end
 
       renew_indefinitely
 
-      logger.info('Lock lost! Killing the unique thread.')
+      UniqueThread.logger.info('Lock lost! Killing the unique thread.')
       worker.terminate
     end
 
@@ -90,7 +87,7 @@ class UniqueThread
       active_lock = self
 
       while active_lock.acquired?
-        logger.debug('Lock renewed! Sleeping until next renewal attempt.')
+        UniqueThread.logger.debug('Lock renewed! Sleeping until next renewal attempt.')
         stopwatch.sleep_until_renewal_attempt
         active_lock = locksmith.renew_lock(active_lock)
       end
