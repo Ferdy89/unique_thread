@@ -38,6 +38,9 @@ RSpec.describe UniqueThread do
   end
 
   describe '.redis' do
+    before { described_class.redis = nil }
+    after  { described_class.redis = nil }
+
     it 'uses a default Redis instance' do
       expect(described_class.redis.connection[:host]).to eql('127.0.0.1')
     end
