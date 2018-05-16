@@ -51,10 +51,20 @@ These are the full options you can pass to your Unique Thread
 UniqueThread.new('name', downtime: 30, logger: Logger.new(STDOUT), redis: Redis.new)
 ```
 
-By default, Unique Thread will log to the standard output and use the default
-Redis connection parameters. You might want to pass your own logger (like
-`Rails.logger` on a Rails application) and your own Redis instance in
-production, but these default values should work for your local tests.
+### Redis
+
+Unique Thread will use the default connection parameters for Redis, which means
+it'll try to connect to `ENV['REDIS_URL']` or to `localhost`. However, you can
+pass your own Redis instance to your Unique Thread if you need finer tuning.
+
+### Logger
+
+Unique Thread will try to use the Rails logger when running on a Rails app.
+However, it will disable logging when running a `rails console` to avoid noise
+in the console. When used outside Rails, it'll log to standard output by
+default but you can pass in your own logger to have finer tuning.
+
+### Downtime
 
 The concept of downtime represents the maximum amount of time allowed without a
 Unique Thread running. Because any process might go down at any point without

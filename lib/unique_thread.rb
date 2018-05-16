@@ -8,7 +8,7 @@ require_relative 'unique_thread/locksmith'
 class UniqueThread
   attr_reader :logger, :stopwatch, :locksmith
 
-  def initialize(name, downtime: 30, logger: Logger.new(STDOUT), redis: Redis.new)
+  def initialize(name, downtime: 30, logger: default_logger, redis: Redis.new)
     @logger    = logger
     @stopwatch = Stopwatch.new(downtime: downtime)
     @locksmith = Locksmith.new(name: name, stopwatch: stopwatch, redis: redis, logger: logger)
@@ -29,6 +29,17 @@ class UniqueThread
   end
 
   private
+
+  def self.default_logger
+    case
+    when defined?(Rails) && defined?(Rails::Console)
+      Logger.new('/dev/null')
+    when defined?(Rails)
+      Rails.logger
+    else
+      Logger.new(STDOUT)
+    end
+  end
 
   def safe_infinite_loop
     Thread.new do
