@@ -65,7 +65,13 @@ RSpec.describe UniqueThread do
       mock_logger = instance_double(Logger, error: nil)
       described_class.logger = mock_logger
 
-      described_class.safe_thread { raise 'Uh, oh! This is bad!' }
+      run = true
+      described_class.safe_thread do
+        if run
+          run = false
+          raise 'Uh, oh! This is bad!'
+        end
+      end
       sleep(0.1) # Give time for thread to run
 
       expect(mock_logger).to have_received(:error).with(/Uh, oh! This is bad!/)
@@ -75,12 +81,36 @@ RSpec.describe UniqueThread do
       reported_errors = []
       described_class.error_handlers << ->(error) { reported_errors << error }
 
-      described_class.safe_thread { raise 'Uh, oh! This is bad!' }
+      run = true
+      described_class.safe_thread do
+        if run
+          run = false
+          raise 'Uh, oh! This is bad!'
+        end
+      end
       sleep(0.1) # Give time for thread to run
 
       expect(reported_errors).to contain_exactly(an_object_having_attributes(message: 'Uh, oh! This is bad!'))
 
       described_class.error_handlers = []
+    end
+
+    it 'continues running after an error occurs' do
+      run_times = 0
+      ran_again = false
+      described_class.safe_thread do
+        case run_times
+        when 0
+          run_times += 1
+          raise 'Uh, oh! This is bad!'
+        when 1
+          run_times += 1
+          ran_again = true
+        end
+      end
+      sleep(0.1) # Give time for thread to run
+
+      expect(ran_again).to be true
     end
   end
 

@@ -27,6 +27,7 @@ class UniqueThread
           yield
         rescue StandardError => error
           report_error(error)
+          retry
         end
       end
     end
