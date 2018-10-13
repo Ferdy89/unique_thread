@@ -89,6 +89,8 @@ visibility on any error reporting services you use. For example:
 UniqueThread.error_handlers << ->(error) { Raven.capture_exception(error) }
 ```
 
+As of v0.5, after reporting the error the block passed will be retried.
+
 ### Downtime
 
 The concept of downtime represents the maximum amount of time allowed without a
