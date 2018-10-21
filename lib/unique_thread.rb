@@ -32,6 +32,10 @@ class UniqueThread
       end
     end
 
+    def run(name, &block)
+      new(name).run(&block)
+    end
+
     private
 
     def default_logger
