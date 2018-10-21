@@ -36,6 +36,10 @@ class UniqueThread
       new(name).run(&block)
     end
 
+    def loop(name, sleep: 30, &block)
+      new(name, downtime: sleep).run(&block)
+    end
+
     private
 
     def default_logger
