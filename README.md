@@ -1,4 +1,4 @@
-# Unique Thread [![Build Status](https://travis-ci.org/Ferdy89/unique_thread.svg?branch=master)](https://travis-ci.org/Ferdy89/unique_thread)
+# Unique Thread [![Build Status](https://travis-ci.org/Ferdy89/unique_thread.svg?branch=master)](https://travis-ci.org/Ferdy89/unique_thread) ![Waffle.io](https://img.shields.io/waffle/label/Ferdy89/unique_thread/status%3A%20in%20progress.svg)
 
 Allows multiple processes to coordinate to make sure one of them (and only one
 of them) is running a block of code at all times.
