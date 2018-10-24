@@ -1,4 +1,4 @@
-# Unique Thread [![Build Status](https://travis-ci.org/Ferdy89/unique_thread.svg?branch=master)](https://travis-ci.org/Ferdy89/unique_thread) ![Waffle.io](https://img.shields.io/waffle/label/Ferdy89/unique_thread/status%3A%20in%20progress.svg)
+# Unique Thread [![Build Status](https://travis-ci.org/Ferdy89/unique_thread.svg?branch=master)](https://travis-ci.org/Ferdy89/unique_thread)  ![Waffle.io](https://img.shields.io/waffle/label/Ferdy89/unique_thread/status%3A%20in%20progress.svg) [![Join the chat at https://gitter.im/ferdynton/unique_thread](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ferdynton/unique_thread?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Allows multiple processes to coordinate to make sure one of them (and only one
 of them) is running a block of code at all times.
